@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      match /projects/{projectId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /tasks/{taskId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /diaryEntries/{entryId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /meetingProtocols/{protocolId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /projectTimeLogs/{logId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /settings/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /weeklySchedule/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /timers/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+  }
+}

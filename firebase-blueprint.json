@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "A project managed in the CRM",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "client": { "type": "string" },
+        "url": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "completed", "paused"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "client", "url", "status", "createdAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A task within a project",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["todo", "in-progress", "done"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "keywords": { "type": "string" },
+        "targetUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "dueDate": { "type": "string", "format": "date" },
+        "estimatedTime": { "type": "number" },
+        "actualTime": { "type": "number" },
+        "comments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "text": { "type": "string" },
+              "createdAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      },
+      "required": ["projectId", "title", "description", "status", "priority", "createdAt"]
+    },
+    "DiaryEntry": {
+      "title": "DiaryEntry",
+      "description": "A daily diary entry",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "content", "createdAt"]
+    },
+    "MeetingProtocol": {
+      "title": "MeetingProtocol",
+      "description": "A meeting protocol for a project",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["projectId", "date", "content", "createdAt"]
+    },
+    "ProjectTimeLog": {
+      "title": "ProjectTimeLog",
+      "description": "A time log for a project",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "duration": { "type": "number" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["projectId", "date", "duration", "description", "createdAt"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "User settings",
+      "type": "object",
+      "properties": {
+        "hourlyRate": { "type": "number" },
+        "weeksPerMonth": { "type": "number" },
+        "currentWeek": { "type": "string" }
+      },
+      "required": ["hourlyRate", "weeksPerMonth", "currentWeek"]
+    },
+    "WeeklySchedule": {
+      "title": "WeeklySchedule",
+      "description": "Weekly schedule of tasks",
+      "type": "object",
+      "properties": {
+        "monday": { "type": "array", "items": { "type": "string" } },
+        "tuesday": { "type": "array", "items": { "type": "string" } },
+        "wednesday": { "type": "array", "items": { "type": "string" } },
+        "thursday": { "type": "array", "items": { "type": "string" } },
+        "friday": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["monday", "tuesday", "wednesday", "thursday", "friday"]
+    },
+    "ActiveTimer": {
+      "title": "ActiveTimer",
+      "description": "Currently active timer",
+      "type": "object",
+      "properties": {
+        "taskId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "startTime": { "type": "number" }
+      },
+      "required": ["startTime"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "User's projects"
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "User's tasks"
+    },
+    "/users/{userId}/diaryEntries/{entryId}": {
+      "schema": { "$ref": "#/entities/DiaryEntry" },
+      "description": "User's diary entries"
+    },
+    "/users/{userId}/meetingProtocols/{protocolId}": {
+      "schema": { "$ref": "#/entities/MeetingProtocol" },
+      "description": "User's meeting protocols"
+    },
+    "/users/{userId}/projectTimeLogs/{logId}": {
+      "schema": { "$ref": "#/entities/ProjectTimeLog" },
+      "description": "User's project time logs"
+    },
+    "/users/{userId}/settings/default": {
+      "schema": { "$ref": "#/entities/Settings" },
+      "description": "User's settings"
+    },
+    "/users/{userId}/weeklySchedule/default": {
+      "schema": { "$ref": "#/entities/WeeklySchedule" },
+      "description": "User's weekly schedule"
+    },
+    "/users/{userId}/timers/activeTimer": {
+      "schema": { "$ref": "#/entities/ActiveTimer" },
+      "description": "User's active task timer"
+    },
+    "/users/{userId}/timers/activeProjectTimer": {
+      "schema": { "$ref": "#/entities/ActiveTimer" },
+      "description": "User's active project timer"
+    }
+  }
+}
