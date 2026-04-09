@@ -100,7 +100,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[150px] p-4',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-sm-2xl mx-auto focus:outline-none min-h-[150px] p-4',
       },
     },
   });
