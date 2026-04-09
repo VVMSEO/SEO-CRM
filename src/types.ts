@@ -91,8 +91,6 @@ export interface Task {
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
-  keywords: string;
-  targetUrl: string;
   createdAt: string;
   dueDate?: string;
   reminderDate?: string;

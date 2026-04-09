@@ -5,6 +5,7 @@ import { useCRMStore } from '../store';
 import { Task, TaskStatus, TaskPriority, DiaryEntry, ProjectTimeLog } from '../types';
 import Modal from './Modal';
 import MeetingProtocols from './MeetingProtocols';
+import RichTextEditor from './RichTextEditor';
 
 const COLUMNS: { id: TaskStatus; title: string; color: string }[] = [
   { id: 'todo', title: 'К выполнению', color: 'bg-slate-100 text-slate-700' },
@@ -78,7 +79,7 @@ export default function TaskList({ store, projectId, onBack }: { store: ReturnTy
 
   const openNewTaskModal = () => {
     setEditingTask(null);
-    setFormData({ status: 'todo', priority: 'medium', projectId });
+    setFormData({ status: 'todo', priority: 'medium', projectId, createdAt: new Date().toISOString() });
     setSelectedTaskId('new');
   };
 
@@ -94,7 +95,7 @@ export default function TaskList({ store, projectId, onBack }: { store: ReturnTy
       if (editingTask) {
         store.updateTask(editingTask.id, formData);
       } else {
-        store.addTask(formData as Omit<Task, 'id' | 'createdAt'>);
+        store.addTask(formData as Omit<Task, 'id'>);
       }
       setSelectedTaskId(null);
     }
@@ -410,7 +411,10 @@ export default function TaskList({ store, projectId, onBack }: { store: ReturnTy
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Описание</label>
-                    <textarea rows={3} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
+                    <RichTextEditor 
+                      content={formData.description || ''} 
+                      onChange={(content) => setFormData({...formData, description: content})} 
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -430,31 +434,59 @@ export default function TaskList({ store, projectId, onBack }: { store: ReturnTy
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Дата добавления</label>
+                      <input type="datetime-local" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" value={formData.createdAt ? new Date(new Date(formData.createdAt).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''} onChange={e => setFormData({...formData, createdAt: new Date(e.target.value).toISOString()})} />
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Дедлайн</label>
                       <input type="date" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" value={formData.dueDate || ''} onChange={e => setFormData({...formData, dueDate: e.target.value})} />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Напоминание</label>
-                      <input type="datetime-local" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" value={formData.reminderDate || ''} onChange={e => setFormData({...formData, reminderDate: e.target.value})} />
-                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Напоминание</label>
+                    <input type="datetime-local" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" value={formData.reminderDate || ''} onChange={e => setFormData({...formData, reminderDate: e.target.value})} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">План. время (минут)</label>
-                      <input type="number" min="0" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Например: 30" value={formData.estimatedTime || ''} onChange={e => setFormData({...formData, estimatedTime: e.target.value ? parseInt(e.target.value) : undefined})} />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">План. время</label>
+                      <div className="flex space-x-2">
+                        <div className="flex-1">
+                          <input type="number" min="0" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Часы" value={formData.estimatedTime !== undefined ? Math.floor(formData.estimatedTime / 60) : ''} onChange={e => {
+                            const h = parseInt(e.target.value) || 0;
+                            const m = formData.estimatedTime ? formData.estimatedTime % 60 : 0;
+                            setFormData({...formData, estimatedTime: h * 60 + m});
+                          }} />
+                        </div>
+                        <div className="flex-1">
+                          <input type="number" min="0" max="59" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Минуты" value={formData.estimatedTime !== undefined ? formData.estimatedTime % 60 : ''} onChange={e => {
+                            const m = parseInt(e.target.value) || 0;
+                            const h = formData.estimatedTime ? Math.floor(formData.estimatedTime / 60) : 0;
+                            setFormData({...formData, estimatedTime: h * 60 + m});
+                          }} />
+                        </div>
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Факт. время (часов)</label>
-                      <input type="number" step="0.1" min="0" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Например: 1.5" value={formData.actualTime !== undefined ? Number((formData.actualTime / 3600).toFixed(2)) : ''} onChange={e => setFormData({...formData, actualTime: e.target.value ? Math.round(parseFloat(e.target.value) * 3600) : 0})} />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Факт. время</label>
+                      <div className="flex space-x-2">
+                        <div className="flex-1">
+                          <input type="number" min="0" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Часы" value={formData.actualTime !== undefined ? Math.floor(formData.actualTime / 3600) : ''} onChange={e => {
+                            const h = parseInt(e.target.value) || 0;
+                            const m = formData.actualTime ? Math.floor((formData.actualTime % 3600) / 60) : 0;
+                            const s = formData.actualTime ? formData.actualTime % 60 : 0;
+                            setFormData({...formData, actualTime: h * 3600 + m * 60 + s});
+                          }} />
+                        </div>
+                        <div className="flex-1">
+                          <input type="number" min="0" max="59" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Минуты" value={formData.actualTime !== undefined ? Math.floor((formData.actualTime % 3600) / 60) : ''} onChange={e => {
+                            const m = parseInt(e.target.value) || 0;
+                            const h = formData.actualTime ? Math.floor(formData.actualTime / 3600) : 0;
+                            const s = formData.actualTime ? formData.actualTime % 60 : 0;
+                            setFormData({...formData, actualTime: h * 3600 + m * 60 + s});
+                          }} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Ключевые слова</label>
-                    <input type="text" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="через запятую" value={formData.keywords || ''} onChange={e => setFormData({...formData, keywords: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Целевой URL</label>
-                    <input type="text" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="/category/slony" value={formData.targetUrl || ''} onChange={e => setFormData({...formData, targetUrl: e.target.value})} />
                   </div>
                   <div className="pt-4 flex justify-end space-x-3">
                     <button type="button" onClick={() => setSelectedTaskId(null)} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Отмена</button>

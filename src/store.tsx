@@ -214,10 +214,10 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addTask = (task: Omit<Task, 'id' | 'createdAt'>) => {
+  const addTask = (task: Omit<Task, 'id'>) => {
     if (!user) return;
     const id = Math.random().toString(36).substring(2, 9);
-    const newTask = { ...task, id, createdAt: new Date().toISOString() };
+    const newTask = { ...task, id, createdAt: task.createdAt || new Date().toISOString() };
     setDoc(doc(db, `users/${user.uid}/tasks/${id}`), newTask);
   };
 
