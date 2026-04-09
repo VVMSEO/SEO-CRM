@@ -111,15 +111,13 @@ export default function TaskList({ store, projectId, onBack }: { store: ReturnTy
   const exportToExcel = () => {
     const data = projectTasks.map(task => ({
       'Название': task.title,
-      'Описание': task.description || '',
+      'Описание': task.description ? task.description.replace(/<[^>]+>/g, '') : '',
       'Статус': COLUMNS.find(c => c.id === task.status)?.title || task.status,
       'Приоритет': PRIORITY_LABELS[task.priority],
       'Создана': new Date(task.createdAt).toLocaleDateString('ru-RU'),
       'Дедлайн': task.dueDate ? new Date(task.dueDate).toLocaleDateString('ru-RU') : '',
       'План. время (м)': task.estimatedTime || '',
-      'Факт. время (ч)': task.actualTime ? (task.actualTime / 3600).toFixed(2) : '',
-      'Ключевые слова': task.keywords || '',
-      'Целевой URL': task.targetUrl || ''
+      'Факт. время (ч)': task.actualTime ? (task.actualTime / 3600).toFixed(2) : ''
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -288,7 +286,7 @@ export default function TaskList({ store, projectId, onBack }: { store: ReturnTy
                       <tr key={task.id} className={`hover:bg-gray-50 transition-colors group ${selectedTaskId === task.id ? 'bg-indigo-50/50' : ''}`}>
                         <td className="p-3">
                           <div className="font-medium text-gray-900 mb-1 cursor-pointer hover:text-indigo-600" onClick={() => openEditTaskModal(task)}>{task.title}</div>
-                          {task.description && <div className="text-xs text-gray-500 line-clamp-1">{task.description}</div>}
+                          {task.description && <div className="text-xs text-gray-500 line-clamp-1">{task.description.replace(/<[^>]+>/g, '')}</div>}
                         </td>
                         <td className={`p-3 text-sm text-gray-500 ${selectedTaskId ? 'hidden' : 'hidden md:table-cell'}`}>
                           {new Date(task.createdAt).toLocaleDateString('ru-RU')}
