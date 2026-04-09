@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Запускать при пуше в ветку main
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -31,7 +31,6 @@ jobs:
         run: npm install
         
       - name: Build
-        # Собираем проект. Флаг --base=./ нужен, чтобы пути к файлам работали корректно на GitHub Pages
         run: npx vite build --base=./
         
       - name: Setup Pages
@@ -40,7 +39,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist' # Папка, куда Vite сохраняет готовый билд
+          path: './dist'
 
   deploy:
     environment:
